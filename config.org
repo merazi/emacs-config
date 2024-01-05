@@ -1,0 +1,175 @@
+#+TITLE: My Emacs Configuration File
+#+STARTUP: content
+
+This is my emacs configuration in an org-mode file, very neat and tidy, please keep it like that.
+
+* Performance
+
+#+begin_src emacs-lisp
+  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1024 1024))
+  (add-hook 'after-init-hook #'(lambda ()
+				 (setq gc-cons-threshold 800000)))
+#+end_src
+
+
+* Editing Tweaks
+
+#+begin_src emacs-lisp
+  (delete-selection-mode 1) ; delete selected text when inserting
+  (show-paren-mode 1)       ; highlight pairing parenthesis
+#+end_src
+
+* Visual Tweaks
+
+UI Elements
+
+#+begin_src emacs-lisp
+  (visual-line-mode t)
+  (if (fboundp 'menu-bar-mode)
+      (menu-bar-mode -1)) ;; hide menu bar
+  (if (fboundp 'tool-bar-mode)
+      (tool-bar-mode -1)) ;; hide tool bar
+  (if (fboundp 'scroll-bar-mode)
+      (scroll-bar-mode -1)) ;; hide scroll bar
+  (setq linum-format "%4d ") ;; set number lines format
+  (add-hook 'prog-mode-hook
+	    (if (or
+		 (not (fboundp 'linum-mode))
+		 (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
+		'display-line-numbers-mode 
+	      'linum-mode)) ;; show line numbers in programming modes
+  ;;(global-display-line-numbers-mode)
+  (setq frame-title-format '(buffer-file-name "Emacs: %b (%f)" "Emacs: %b"))
+#+end_src
+
+I like the leuven theme for my emacs, it looks very good on org-mode files IMO.
+
+#+begin_src emacs-lisp
+  (setq leuven-scale-outline-headlines 150)
+  (if (not custom-enabled-themes)
+      (load-theme 'leuven t))
+#+end_src
+
+Change the font
+
+#+begin_src emacs-lisp
+  (set-frame-font "JetBrainsMono Nerd Font 11" nil t)
+#+end_src
+
+* Backups and temporary files
+
+#+begin_src emacs-lisp
+  (defconst emacs-tmp-dir (expand-file-name (format "emacs%d" (user-uid)) temporary-file-directory))
+  (setq
+   backup-by-copying t
+   delete-old-versions t
+   kept-new-versions 6
+   kept-old-versions 2
+   version-control t
+   auto-save-list-file-prefix emacs-tmp-dir
+   auto-save-file-name-transforms `((".*" ,emacs-tmp-dir t))
+   backup-directory-alist `((".*" . ,emacs-tmp-dir)))
+  (setq create-lockfiles nil)
+#+end_src
+
+* Packages
+
+Initial setup for use-package.
+
+#+begin_src emacs-lisp
+  (require 'package)
+  (setq package-enable-at-startup nil)
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  (unless package--initialized (package-initialize))
+
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (eval-when-compile
+    (require 'use-package))
+  (setq use-package-always-ensure t)
+#+end_src
+
+And now the packages.
+
+** Unsorted packages
+
+Just packages that I liked and installed into Emacs.
+
+*** Undo tree
+
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :init (global-undo-tree-mode)
+    :config (setq-default undo-tree-auto-save-history nil))
+#+end_src
+
+*** Beacon
+
+Highlight the cursor whenever the window scrolls
+
+#+begin_src emacs-lisp
+  (use-package beacon
+    :init (beacon-mode))
+#+end_src
+
+*** Org Superstar
+
+This mode (among other things) adds nice symbols for org-mode headers.
+
+#+begin_src emacs-lisp
+  (use-package org-superstar
+    :init (org-superstar-mode))
+#+end_src
+
+*** Company mode
+
+#+begin_src emacs-lisp
+  (use-package company
+    :init (company-mode))
+#+end_src
+
+** Language support
+
+Packages specific to programming languages.
+
+*** Eglot
+
+This thing connects to language server protocols very easily.
+
+#+begin_src emacs-lisp
+  (use-package eglot
+    :config (global-set-key [f4] 'eglot))
+#+end_src
+
+*** Golang
+
+#+begin_src emacs-lisp
+  (use-package go-mode
+    :config (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
+#+end_src
+
+* Key bindings
+
+Use ibuffer instead of regular buffer switch.
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-x b") 'ibuffer)
+#+end_src
+
+Some editing bindings
+
+#+begin_src emacs-lisp
+  (global-set-key [mouse-3] 'mouse-popup-menubar-stuff)
+  (global-set-key (kbd "C->") 'indent-rigidly-right-to-tab-stop)
+  (global-set-key (kbd "C-<") 'indent-rigidly-left-to-tab-stop)
+  ;(global-set-key (kbd "M-DEL") 'sanemacs/backward-kill-word)
+  ;(global-set-key (kbd "C-DEL") 'sanemacs/backward-kill-word)
+#+end_src
+
+Open this config file with a key stroke.
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<f6>") (lambda() (interactive)(find-file "~/.emacs.d/")))
+#+end_src
