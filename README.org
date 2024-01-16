@@ -9,7 +9,7 @@ This is my emacs configuration in an org-mode file, very neat and tidy, please k
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024))
   (add-hook 'after-init-hook #'(lambda ()
-				 (setq gc-cons-threshold 800000)))
+                                 (setq gc-cons-threshold 800000)))
 #+end_src
 
 * Editing Tweaks
@@ -17,7 +17,6 @@ This is my emacs configuration in an org-mode file, very neat and tidy, please k
 #+begin_src emacs-lisp
   (delete-selection-mode 1) ; delete selected text when inserting
   (show-paren-mode 1)       ; highlight pairing parenthesis
-  (setq vc-follow-symlinks nil) ; always folow symlinks
   (global-unset-key (kbd "C-z")) ; don't send emacs to the background
   ;; scroll with ctrl+mousewheel like other editors do
   (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
@@ -38,27 +37,42 @@ UI Elements
       (scroll-bar-mode -1)) ;; hide scroll bar
   (setq linum-format "%4d ") ;; set number lines format
   (add-hook 'prog-mode-hook
-	    (if (or
-		 (not (fboundp 'linum-mode))
-		 (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
-		'display-line-numbers-mode 
-	      'linum-mode)) ;; show line numbers in programming modes
+            (if (or
+                 (not (fboundp 'linum-mode))
+                 (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
+                'display-line-numbers-mode 
+              'linum-mode)) ;; show line numbers in programming modes
   ;;(global-display-line-numbers-mode)
   (setq frame-title-format '(buffer-file-name "Emacs: %b (%f)" "Emacs: %b"))
 #+end_src
 
-I like the leuven theme for my emacs, it looks very good on org-mode files IMO.
+My emacs look and feel for every day work.
 
 #+begin_src emacs-lisp
-  (setq leuven-scale-outline-headlines 150)
-  (if (not custom-enabled-themes)
-      (load-theme 'leuven t))
+;  (use-package ample-theme
+;    :config (load-theme 'ample-flat t))
+#+end_src
+
+I'm using this as my modeline, is slightly different from the default one but it looks clean.
+
+#+begin_src emacs-lisp
+  (use-package mood-line
+    :config (mood-line-mode)
+    :custom (setq mood-line-glyph-alist mood-line-glyphs-unicode
+                  mood-line-format mood-line-format-default-extended))
 #+end_src
 
 Change the font
 
 #+begin_src emacs-lisp
-  (set-frame-font "Hack NerdFont 11" nil t)
+  (set-frame-font "Hack NerdFont 13" nil t)
+#+end_src
+
+And you don't need to look at anything else than emacs, so let's make it fullscreen...
+
+#+begin_src emacs-lisp
+  (custom-set-variables
+   '(initial-frame-alist (quote ((fullscreen . maximized)))))
 #+end_src
 
 * Backups and temporary files
@@ -100,6 +114,13 @@ Change the font
     (interactive)
     (setq file (dired-get-file-for-visit))
     (shell-command (concat "xdg-open " (shell-quote-argument file))))
+
+  (defun sanemacs/backward-kill-word ()
+    "Yes, I stole this and I'm not even hiding it"
+    (interactive "*")
+    (push-mark)
+    (backward-word)
+    (delete-region (point) (mark)))
 #+end_src
 
 * Packages
@@ -148,15 +169,22 @@ Highlight the cursor whenever the window scrolls
 This mode (among other things) adds nice symbols for org-mode headers.
 
 #+begin_src emacs-lisp
-  (use-package org-superstar
-    :init (org-superstar-mode))
+  (use-package org-superstar)
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
 #+end_src
 
 *** Company mode
 
 #+begin_src emacs-lisp
   (use-package company
-    :init (company-mode))
+    :init (global-company-mode t)
+    :config
+    ;;navigate minibuffer
+    (define-key company-active-map (kbd "C-n") 'company-select-next)
+    (define-key company-active-map (kbd "C-p") 'company-select-previous)
+
+    ;; Provide instant autocompletion.
+    (setq company-idle-delay 0.0))
 #+end_src
 
 ** Language support
@@ -174,18 +202,31 @@ This thing connects to language server protocols very easily.
 
 *** Golang
 
+[[https://juststickers.in/wp-content/uploads/2016/07/go-programming-language.png]]
+
 #+begin_src emacs-lisp
   (use-package go-mode
     :config (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
 #+end_src
 
-* Key bindings
-
-Use ibuffer instead of regular buffer switch.
+*** Lua
 
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-x b") 'ibuffer)
+  (use-package lua-mode
+    :config (add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode)))
 #+end_src
+
+*** Markdown
+
+Ye... Org mode is superior but sometimes I need to pull up a nasty markdown file.
+
+#+begin_src emacs-lisp
+  (use-package markdown-mode
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init (setq markdown-command "multimarkdown"))
+#+end_src
+
+* Key bindings
 
 Some editing bindings
 
@@ -193,8 +234,8 @@ Some editing bindings
   (global-set-key [mouse-3] 'mouse-popup-menubar-stuff)
   (global-set-key (kbd "C->") 'indent-rigidly-right-to-tab-stop)
   (global-set-key (kbd "C-<") 'indent-rigidly-left-to-tab-stop)
-  ;(global-set-key (kbd "M-DEL") 'sanemacs/backward-kill-word)
-  ;(global-set-key (kbd "C-DEL") 'sanemacs/backward-kill-word)
+  (global-set-key (kbd "M-DEL") 'sanemacs/backward-kill-word)
+  (global-set-key (kbd "C-DEL") 'sanemacs/backward-kill-word)
 #+end_src
 
 Open this config file with a key stroke.
@@ -208,14 +249,14 @@ Some key bindings for emacs modes and functions
 #+begin_src emacs-lisp
   (global-set-key "\C-ce" 'eww)
   (global-set-key "\C-cs" 'eshell)
-  (global-set-key "\C-xb" 'buffer-menu)
+  (global-set-key "\C-xb" 'ibuffer)
   (global-set-key "\C-ck" 'delete-frame)
   (global-set-key "\C-cc" 'mer/edit-config)
   (global-set-key "\C-cq" 'mer/reload-config)
   (global-set-key "\C-cf" 'mer/show-full-file-path)
   (eval-after-load "dired"
     '(progn (define-key dired-mode-map (kbd "M-o") 'other-window)
-	    (define-key dired-mode-map (kbd "\C-co") 'mer/xdg-open)))
+            (define-key dired-mode-map (kbd "\C-co") 'mer/xdg-open)))
   (global-set-key "\C-cy" 'yas-insert-snippet)
 #+end_src
 
@@ -225,7 +266,7 @@ I find myself using this web browser more often so I figured out I would tweak i
 
 #+begin_src emacs-lisp
   (setq eww-download-directory "~/Downloads/"
-      eww-desktop-remove-duplicates t
-      eww-history-limit 20
-      eww-search-prefix "https://lite.duckduckgo.com/lite/?q=")
+        eww-desktop-remove-duplicates t
+        eww-history-limit 20
+        eww-search-prefix "https://lite.duckduckgo.com/lite/?q=")
 #+end_src
