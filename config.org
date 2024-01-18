@@ -1,4 +1,5 @@
 #+TITLE: My Emacs Configuration File
+#+AUTHOR: Jose Meraz
 #+STARTUP: content
 
 This is my emacs configuration in an org-mode file, very neat and tidy, please keep it like that.
@@ -49,17 +50,19 @@ UI Elements
 My emacs look and feel for every day work.
 
 #+begin_src emacs-lisp
-;  (use-package ample-theme
-;    :config (load-theme 'ample-flat t))
+  (use-package doom-themes
+    :config (load-theme 'doom-one-light t))
 #+end_src
 
-I'm using this as my modeline, is slightly different from the default one but it looks clean.
+I like to use doom-modeline even tho I don't use doom emacs myself.
 
 #+begin_src emacs-lisp
-  (use-package mood-line
-    :config (mood-line-mode)
-    :custom (setq mood-line-glyph-alist mood-line-glyphs-unicode
-                  mood-line-format mood-line-format-default-extended))
+  (use-package doom-modeline
+    :init (doom-modeline-mode 1))
+  (setq doom-modeline-hud nil)
+  (setq doom-modeline-icon t)
+  (setq doom-modeline-major-mode-icon t)
+  (setq doom-modeline-major-mode-color-icon t)
 #+end_src
 
 Change the font
@@ -68,7 +71,8 @@ Change the font
   (set-frame-font "Hack NerdFont 13" nil t)
 #+end_src
 
-And you don't need to look at anything else than emacs, so let's make it fullscreen...
+You don't need to look at anything else than EMACS, so let's make
+it fullscreen...
 
 #+begin_src emacs-lisp
   (custom-set-variables
@@ -202,8 +206,6 @@ This thing connects to language server protocols very easily.
 
 *** Golang
 
-[[https://juststickers.in/wp-content/uploads/2016/07/go-programming-language.png]]
-
 #+begin_src emacs-lisp
   (use-package go-mode
     :config (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
@@ -224,6 +226,19 @@ Ye... Org mode is superior but sometimes I need to pull up a nasty markdown file
   (use-package markdown-mode
     :mode ("README\\.md\\'" . gfm-mode)
     :init (setq markdown-command "multimarkdown"))
+#+end_src
+
+*** HTML/CSS
+
+#+begin_src emacs-lisp
+  (use-package web-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode)))
+  (use-package emmet-mode
+    :config
+    (add-hook 'css-mode-hook  'emmet-mode)
+    (add-hook 'web-mode-hook  'emmet-mode))
 #+end_src
 
 * Key bindings
