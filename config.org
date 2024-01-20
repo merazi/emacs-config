@@ -51,7 +51,8 @@ My emacs look and feel for every day work.
 
 #+begin_src emacs-lisp
   (use-package doom-themes
-    :config (load-theme 'doom-one-light t))
+    :config 
+    (load-theme 'doom-solarized-dark t))
 #+end_src
 
 I like to use doom-modeline even tho I don't use doom emacs myself.
@@ -68,7 +69,7 @@ I like to use doom-modeline even tho I don't use doom emacs myself.
 Change the font
 
 #+begin_src emacs-lisp
-  (set-frame-font "Hack NerdFont 13" nil t)
+  (set-frame-font "FiraCode Nerd Font 13" nil t)
 #+end_src
 
 You don't need to look at anything else than EMACS, so let's make
@@ -119,12 +120,6 @@ it fullscreen...
     (setq file (dired-get-file-for-visit))
     (shell-command (concat "xdg-open " (shell-quote-argument file))))
 
-  (defun sanemacs/backward-kill-word ()
-    "Yes, I stole this and I'm not even hiding it"
-    (interactive "*")
-    (push-mark)
-    (backward-word)
-    (delete-region (point) (mark)))
 #+end_src
 
 * Packages
@@ -191,6 +186,21 @@ This mode (among other things) adds nice symbols for org-mode headers.
     (setq company-idle-delay 0.0))
 #+end_src
 
+*** Lorem Ipsum
+
+Aliquam erat volutpat.  Nunc eleifend leo vitae magna.  In id erat non
+orci commodo lobortis.  Proin neque massa, cursus ut, gravida ut,
+lobortis eget, lacus.  Sed diam.  Praesent fermentum tempor tellus.
+Nullam tempus.  Mauris ac felis vel velit tristique imperdiet.  Donec
+at pede.  Etiam vel neque nec dui dignissim bibendum.  Vivamus id
+enim.  Phasellus neque orci, porta a, aliquet quis, semper a, massa.
+Phasellus purus.  Pellentesque tristique imperdiet tortor.  Nam
+euismod tellus id erat.
+
+#+begin_src emacs-lisp
+  (use-package lorem-ipsum)
+#+end_src
+
 ** Language support
 
 Packages specific to programming languages.
@@ -249,8 +259,6 @@ Some editing bindings
   (global-set-key [mouse-3] 'mouse-popup-menubar-stuff)
   (global-set-key (kbd "C->") 'indent-rigidly-right-to-tab-stop)
   (global-set-key (kbd "C-<") 'indent-rigidly-left-to-tab-stop)
-  (global-set-key (kbd "M-DEL") 'sanemacs/backward-kill-word)
-  (global-set-key (kbd "C-DEL") 'sanemacs/backward-kill-word)
 #+end_src
 
 Open this config file with a key stroke.
