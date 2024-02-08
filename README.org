@@ -53,24 +53,25 @@ No extra package needed.
 UI Elements
 
 #+begin_src emacs-lisp
-  (setq inhibit-splash-screen t)
-  (setq inhibit-startup-message t)
-  (visual-line-mode nil)
-  (if (fboundp 'menu-bar-mode)
-      (menu-bar-mode -1)) ;; hide menu bar
-  (if (fboundp 'tool-bar-mode)
-      (tool-bar-mode -1)) ;; hide tool bar
-  (if (fboundp 'scroll-bar-mode)
-      (scroll-bar-mode -1)) ;; hide scroll bar
-  (setq linum-format "%4d ") ;; set number lines format
-  (add-hook 'prog-mode-hook
-	    (if (or
-		 (not (fboundp 'linum-mode))
-		 (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
-		'display-line-numbers-mode 
-	      'linum-mode)) ;; show line numbers in programming modes
-  ;;(global-display-line-numbers-mode)
-  (setq frame-title-format '(buffer-file-name "Emacs: %b (%f)" "Emacs: %b"))
+    (setq inhibit-splash-screen t)
+    (setq inhibit-startup-message t)
+    (visual-line-mode nil)
+    (if (fboundp 'menu-bar-mode)
+	(menu-bar-mode -1)) ;; hide menu bar
+    (if (fboundp 'tool-bar-mode)
+	(tool-bar-mode -1)) ;; hide tool bar
+    (if (fboundp 'scroll-bar-mode)
+	(scroll-bar-mode -1)) ;; hide scroll bar
+    (setq linum-format "%4d ") ;; set number lines format
+    (add-hook 'prog-mode-hook
+	      (if (or
+		   (not (fboundp 'linum-mode))
+		   (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
+		  'display-line-numbers-mode 
+		'linum-mode
+		'eglot-mode)) ;; show line numbers in programming modes
+    ;;(global-display-line-numbers-mode)
+    (setq frame-title-format '(buffer-file-name "Emacs: %b (%f)" "Emacs: %b"))
 #+end_src
 
 My emacs look and feel for every day work.
@@ -101,8 +102,7 @@ You don't need to look at anything else than EMACS, so let's make
 it fullscreen...
 
 #+begin_src emacs-lisp
-  (custom-set-variables
-   '(initial-frame-alist (quote ((fullscreen . maximized)))))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+end_src
 
 * Backups and temporary files
@@ -172,6 +172,14 @@ And now the packages.
 Just packages that I liked and installed into Emacs, not related to a
 specific programming language but still cool.
 
+*** VTerm
+
+A proper terminal emulator in emacs.
+
+#+begin_src emacs-lisp
+  (use-package vterm)
+#+end_src
+
 *** Ivy
 #+begin_src emacs-lisp
   (use-package ivy
@@ -184,8 +192,8 @@ to Ctrl+s.
 
 #+begin_src emacs-lisp
   (use-package swiper
-   :config
-   (global-set-key "\C-s" 'swiper))
+    :config
+    (global-set-key "\C-s" 'swiper))
 #+end_src
 
 *** Emojify
@@ -201,7 +209,7 @@ Just so I can show cool emojis inside emacs. 🤓
 Show all the cool icons please.
 
 #+begin_src emacs-lisp
-   (use-package all-the-icons)
+  (use-package all-the-icons)
 #+end_src
 
 *** Undo tree
@@ -211,22 +219,6 @@ Very cool undo-redo solution.
   (use-package undo-tree
     :init (global-undo-tree-mode)
     :config (setq-default undo-tree-auto-save-history nil))
-#+end_src
-
-*** Org Cliplink
-
-This allows you to insert links in org mode from your clipboard.
-
-#+begin_src emacs-lisp
-  (use-package org-cliplink
-    :config (global-set-key (kbd "C-x p i") 'org-cliplink))
-#+end_src
-
-*** Org Download
-
-#+begin_src emacs-lisp
-  (use-package org-download
-    :init (add-hook 'org-mode-hook 'org-download-enable))
 #+end_src
 
 *** Company mode
@@ -306,6 +298,30 @@ Ye... Org mode is superior but sometimes I need to pull up a nasty markdown file
     :config
     (add-hook 'css-mode-hook  'emmet-mode)
     (add-hook 'web-mode-hook  'emmet-mode))
+#+end_src
+
+** Org Mode Related
+*** Org Cliplink
+
+This allows you to insert links in org mode from your clipboard.
+
+#+begin_src emacs-lisp
+  (use-package org-cliplink
+    :config (global-set-key (kbd "C-x p i") 'org-cliplink))
+#+end_src
+
+*** Org Download
+
+#+begin_src emacs-lisp
+  (use-package org-download
+    :init (add-hook 'org-mode-hook 'org-download-enable))
+#+end_src
+
+*** Org Modern
+
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :init (add-hook 'org-mode-hook 'org-modern))
 #+end_src
 
 * Key bindings
