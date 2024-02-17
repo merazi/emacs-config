@@ -1,9 +1,10 @@
 #+TITLE: My Emacs Configuration File
 #+AUTHOR: Jose Meraz
-#+STARTUP: content
+#+STARTUP: overview
 
 This is my emacs configuration in an org-mode file, very neat and
-tidy, please keep it like that.
+tidy, please keep it like that. Also, make sure to start your emacs
+server with the *emacs --daemon* command.
 
 * Performance
 
@@ -11,8 +12,9 @@ tidy, please keep it like that.
   (setq gc-cons-threshold 100000000)
   (setq read-process-output-max (* 1024 1024))
   (add-hook 'after-init-hook #'(lambda ()
-				 (setq gc-cons-threshold 800000)))
+                                 (setq gc-cons-threshold 800000)))
   (setq byte-compile-warnings '(cl-functions)) ; i'm using old packages lol
+  (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*"))) ; pull up the dashboard
 #+end_src
 
 * Editing Tweaks
@@ -22,6 +24,7 @@ tidy, please keep it like that.
   (show-paren-mode 1)       ; highlight pairing parenthesis
   (electric-pair-mode 1)    ; automatically match parenthesis
   (global-unset-key (kbd "C-z")) ; don't send emacs to the background
+  (setq visible-bell 1) ; silence please
 
   ;; scroll with ctrl+mousewheel like other editors do
   (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
@@ -53,56 +56,43 @@ No extra package needed.
 UI Elements
 
 #+begin_src emacs-lisp
-    (setq inhibit-splash-screen t)
-    (setq inhibit-startup-message t)
-    (visual-line-mode nil)
-    (if (fboundp 'menu-bar-mode)
-	(menu-bar-mode -1)) ;; hide menu bar
-    (if (fboundp 'tool-bar-mode)
-	(tool-bar-mode -1)) ;; hide tool bar
-    (if (fboundp 'scroll-bar-mode)
-	(scroll-bar-mode -1)) ;; hide scroll bar
-    (setq linum-format "%4d ") ;; set number lines format
-    (add-hook 'prog-mode-hook
-	      (if (or
-		   (not (fboundp 'linum-mode))
-		   (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
-		  'display-line-numbers-mode 
-		'linum-mode
-		'eglot-mode)) ;; show line numbers in programming modes
-    ;;(global-display-line-numbers-mode)
-    (setq frame-title-format '(buffer-file-name "Emacs: %b (%f)" "Emacs: %b"))
+  (setq inhibit-splash-screen t)
+  (setq inhibit-startup-message t)
+  (visual-line-mode nil)
+  (menu-bar-mode -1) ;; hide menu bar
+  (tool-bar-mode -1) ;; hide tool bar
+  (scroll-bar-mode -1) ;; hide scroll bar
+  (setq linum-format "%4d ") ;; set number lines format
+  (add-hook 'prog-mode-hook
+            (if (or
+                 (not (fboundp 'linum-mode))
+                 (and (fboundp 'display-line-numbers-mode) (display-graphic-p)))
+                'display-line-numbers-mode 
+              'linum-mode)) ;; show line numbers in programming modes
+  ;;(global-display-line-numbers-mode)
+  (setq frame-title-format '(buffer-file-name "Emacs: %b (%f)" "Emacs: %b"))
 #+end_src
 
 My emacs look and feel for every day work.
 
 #+begin_src emacs-lisp
-  (use-package doom-themes
-    :config (load-theme 'doom-dark+ t))
+  (use-package spacemacs-theme
+    :config (load-theme 'spacemacs-dark t))
 #+end_src
 
 I like to use doom-modeline even tho I don't use doom emacs myself.
 
 #+begin_src emacs-lisp
-  (use-package doom-modeline
-    :init (doom-modeline-mode 1))
-  (setq doom-modeline-hud nil)
-  (setq doom-modeline-icon t)
-  (setq doom-modeline-major-mode-icon t)
-  (setq doom-modeline-major-mode-color-icon t)
-#+end_src
-
-Change the font
-
-#+begin_src emacs-lisp
-					  ;(set-frame-font "FiraCode Nerd Font 13" nil t)
+  (use-package simple-modeline
+    :hook (after-init . simple-modeline-mode))
 #+end_src
 
 You don't need to look at anything else than EMACS, so let's make
 it fullscreen...
 
 #+begin_src emacs-lisp
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (setq default-frame-alist '((undecorated . t))) ; and you don't need window decorations either
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+end_src
 
 * Backups and temporary files
@@ -145,6 +135,11 @@ it fullscreen...
     (setq file (dired-get-file-for-visit))
     (shell-command (concat "xdg-open " (shell-quote-argument file))))
 
+  (defun mer/dos2unix ()
+    "Replace DOS eolns CR LF with Unix eolns CR"
+    (interactive)
+    (goto-char (point-min))
+    (while (search-forward "\r" nil t) (replace-match "")))
 #+end_src
 
 * Packages
@@ -167,17 +162,46 @@ Initial setup for use-package.
 
 And now the packages.
 
-** Unsorted packages
+** Misc packages
 
 Just packages that I liked and installed into Emacs, not related to a
 specific programming language but still cool.
 
+*** Dashboard
+#+begin_src emacs-lisp
+    (use-package dashboard
+      :config
+      (dashboard-setup-startup-hook)
+      (setq dashboard-startup-banner "~/.face")
+      (setq dashboard-center-content t)
+      (setq dashboard-items '((recents  . 5)
+                              (bookmarks . 5)))
+      (setq dashboard-display-icons-p t)
+      (setq dashboard-set-heading-icons t)
+      (setq dashboard-set-file-icons t)
+      (dashboard-modify-heading-icons '((recents . "file-text")
+                                  (bookmarks . "book"))))
+#+end_src
+*** Magit
+#+begin_src emacs-lisp
+  (use-package magit)
+#+end_src
 *** VTerm
 
 A proper terminal emulator in emacs.
 
 #+begin_src emacs-lisp
   (use-package vterm)
+#+end_src
+
+*** Neotree
+
+#+begin_src emacs-lisp
+  (use-package neotree
+    :config
+    (global-set-key [f8] 'neotree-toggle)
+    (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+    (setq neo-smart-open t))
 #+end_src
 
 *** Ivy
@@ -260,7 +284,8 @@ This thing connects to language server protocols very easily.
 
 #+begin_src emacs-lisp
   (use-package eglot
-    :config (global-set-key [f4] 'eglot))
+    :config (global-set-key [f4] 'eglot)
+    :hook ((prog-mode-hook . eglot)))
 #+end_src
 
 *** Golang
@@ -290,14 +315,20 @@ Ye... Org mode is superior but sometimes I need to pull up a nasty markdown file
 *** HTML/CSS
 
 #+begin_src emacs-lisp
-  (use-package web-mode
-    :config
-    (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
-    (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode)))
   (use-package emmet-mode
     :config
     (add-hook 'css-mode-hook  'emmet-mode)
+    (add-hook 'html-mode-hook 'emmet-mode)
     (add-hook 'web-mode-hook  'emmet-mode))
+  (use-package skewer-mode
+    :config
+    (add-hook 'js2-mode-hook 'skewer-mode)
+    (add-hook 'css-mode-hook 'skewer-css-mode)
+    (add-hook 'html-mode-hook 'skewer-html-mode))
+  (use-package impatient-mode
+    :config
+    (add-hook 'css-mode-hook 'impatient-mode)
+    (add-hook 'html-mode-hook 'impatient-mode))
 #+end_src
 
 ** Org Mode Related
@@ -319,9 +350,12 @@ This allows you to insert links in org mode from your clipboard.
 
 *** Org Modern
 
+Better org mode styling.
+
 #+begin_src emacs-lisp
-  (use-package org-modern
-    :init (add-hook 'org-mode-hook 'org-modern))
+  (use-package org-bullets
+    :hook ((org-mode . org-bullets-mode)
+           (org-mode . org-indent-mode)))
 #+end_src
 
 * Key bindings
@@ -352,7 +386,7 @@ Some key bindings for emacs modes and functions
   (global-set-key "\C-cf" 'mer/show-full-file-path)
   (eval-after-load "dired"
     '(progn (define-key dired-mode-map (kbd "M-o") 'other-window)
-	    (define-key dired-mode-map (kbd "\C-co") 'mer/xdg-open)))
+            (define-key dired-mode-map (kbd "\C-co") 'mer/xdg-open)))
   (global-set-key "\C-cy" 'yas-insert-snippet)
 #+end_src
 
@@ -365,7 +399,7 @@ I find myself using this web browser more often so I figured out I would tweak i
 
 #+begin_src emacs-lisp
   (setq eww-download-directory "~/Downloads/"
-	eww-desktop-remove-duplicates t
-	eww-history-limit 20
-	eww-search-prefix "https://lite.duckduckgo.com/lite/?q=")
+        eww-desktop-remove-duplicates t
+        eww-history-limit 20
+        eww-search-prefix "https://lite.duckduckgo.com/lite/?q=")
 #+end_src
